@@ -1,0 +1,651 @@
+---
+title: <b>Parcial Final <br>Probabilidad y Estadística Fundamental</b>
+author: "Eduard Patiño, Kevin González, Juan Cristancho, Anderson Mateus, Javier Latorre"
+date: "2023-06-28"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r message = FALSE, echo = FALSE, include=FALSE}
+library(readxl, quietly = TRUE)
+
+library(plotly)
+library(fdth)
+library(tidyverse)
+library(dplyr)
+library(descr)
+library(plot3D)
+library(plotly)
+library(ggplot2)
+library(viridis)
+library(plotrix)
+library(modeest)
+library(readr)
+library(remotes)
+library(stats)
+library(readxl)
+library(nortest)
+
+
+
+#Semilla excel
+base_datos <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 3/file6a9c21df3f11.xlsx")
+
+#Datos por género
+Hombre <- subset(base_datos, X25 == 1)
+Mujer <- subset(base_datos, X25 == 0)
+
+#Muestra aleatoria 
+muestraHombre <- Hombre[sample(nrow(Hombre), 50), ]
+muestraMujer <- Mujer[sample(nrow(Mujer), 50), ]
+muestra_medidas <- rbind(muestraHombre, muestraMujer)
+View(muestra_medidas)
+attach(muestra_medidas)
+
+##cargamos la base de datos de Mateus desde excel
+
+data <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 3/file6a9c21df3f11.xlsx")
+datos <- data.frame(data)
+
+
+
+```
+
+<br> 
+<h1><b>Introducción</b></h1>
+
+>En este trabajo se evidencia como desde una base de datos cargada en Excel la cual contiene información detallada de 507 individuos y 8 variables diferentes. Utilizaremos esta información para llevar a cabo una serie de análisis y pruebas estadísticas que nos permitirán obtener conclusiones significativas sobre nuestra muestra. Para obtener de manera concreta y concisa comenzaremos creando una semilla única utilizando los últimos dígitos de las cédulas de los integrantes del grupo. Con esta semilla, seleccionaremos una muestra de 50 individuos hombres y 50 individuos mujeres, teniendo en cuenta las variables mencionadas anteriormente. Esto nos permitirá tener una representación equilibrada de ambos géneros y facilitará nuestro análisis comparativo.
+
+>Se podrá observar como por medio de 4 actividades propuestas se refleja lo trabajado en las últimas temáticas observadas en el semestre; El manejo de lenguaje R se vera de manera importante reflejado de tal manera que se logra una solución adecuada de cada problema propuesto.
+
+<br>
+<br> 
+<h1><b>Actividad 1 Creación de la Semilla</b></h1>
+
+```{r}
+# Crear una semilla para reproducibilidad
+# set.seed(20261)
+
+# Filtrar 50 hombres aleatoriamente
+# hombres <- basedatos[basedatos$X25 == 1, ]
+# muestra_hombres <- hombres[sample(nrow(hombres), 50), ]
+
+# Filtrar 50 mujeres aleatoriamente
+# mujeres <- basedatos[basedatos$X25 == 0, ]
+# muestra_mujeres <- mujeres[sample(nrow(mujeres), 50), ]
+
+# Combinar los resultados en una muestra final
+# muestra_final <- rbind(muestra_hombres, muestra_mujeres)
+
+# Mostrar la muestra final
+# print(muestra_final)
+```
+
+<br>
+<br> 
+<h1><b>Actividad 2 Intervalos de Confianza</b></h1>
+
+<h3><b><u>Punto A.</u></b>Construya intervalos de confianza del 90% para el promedio de las 3 primeras variables. Escriba la interpretación en el contexto de cada caso.</h3>
+
+```{r}
+
+# Cargamos el paquete necesario para calcular intervalos de confianza
+library(stats)
+
+datos <- readxl::read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 3/file6a9c21df3f11.xlsx")
+
+# Extraemos las tres primeras variables
+variables <- datos[, c("X6", "X7", "X8")]
+
+# Calculamos los intervalos de confianza del 90% para el promedio de las tres variables
+intervalos <- t(sapply(variables, function(x) t.test(x)$conf.int))
+
+# Asignamos nombres a las filas y columnas
+rownames(intervalos) <- c("X6", "X7", "X8")
+colnames(intervalos) <- c("Límite inferior", "Límite superior")
+
+# Imprimimos los intervalos de confianza
+intervalos
+
+
+```
+
+```{r}
+
+# Creaamos un subconjunto de datos con las tres primeras variables
+subconjunto <- datos[, c("X6", "X7", "X8")]
+
+# Calculamos los intervalos de confianza para el promedio de las tres variables
+intervalo_confianza <- t.test(subconjunto, conf.level = 0.9)$conf.int
+
+# Imprimimos los intervalos de confianza
+print(intervalo_confianza)
+```
+<h4>Al realizar los intervalos de confianza del promedio de las variables, obtenemos un límite inferior y superior, los cuales nos indican que con un nivel de confianza del 90% se espera que el valor verdadero del promedio de esas variables este dentro de ese intervalo. Lo cual también se puede interpretar de la siguiente manera: En promedio el diámetro del codo está entre [13.17885, 13.68915] con un nivel de confianza del 90%; y así para las demás variables.</h4>
+
+<hr style="border: 1px solid black;">
+
+<h3><b><u>Punto B.</u></b>Construya un intervalo de confianza del 99% para la proporción de las mujeres que miden menos de 165 cm.</h3>
+
+```{r}
+
+# Creamos un subconjunto de datos con las variables de interés
+subconjunto <- datos[, c("X24", "X25")]
+
+# Filtramos los datos para obtener solo las mujeres
+mujeres <- subset(subconjunto, X25 == 0)
+
+# Calculamos la proporción de mujeres que miden menos de 165 cm
+proporcion <- sum(mujeres$X24 < 165) / nrow(mujeres)
+
+# Calculamos el intervalo de confianza para la proporción
+intervalo_confianza <- prop.test(sum(mujeres$X24 < 165), nrow(mujeres), conf.level = 0.99)$conf.int
+
+# Imprimimos la proporción y el intervalo de confianza
+print(proporcion)
+print(intervalo_confianza)
+
+```
+<h4>Con un nivel de confianza del 99% se espera que la proporcion real de mujeres que miden menos de 1.65cm esté entre el [0.33, 0.697].</h4>
+
+<hr style="border: 1px solid black;">
+
+<h3><b><u>Punto C.</u></b>Construya un intervalo del 95% para la diferencia de promedios de la circunferencia abdominal entre hombres y mujeres.</h3>
+
+```{r}
+
+# Creamos un subconjunto de datos con las variables de interés
+subconjunto <- datos[, c("X13", "X25")]
+
+# Filtramos los datos para obtener solo las mediciones de hombres y mujeres
+hombres <- subset(subconjunto, X25 == 1)
+mujeres <- subset(subconjunto, X25 == 0)
+
+# Calculamos la diferencia de promedios de circunferencia abdominal entre hombres y mujeres
+diferencia_promedios <- mean(hombres$X13) - mean(mujeres$X13)
+
+# Calculamos el intervalo de confianza para la diferencia de promedios
+intervalo_confianza <- t.test(hombres$X13, mujeres$X13, conf.level = 0.95)$conf.int
+
+# Imprimimos la diferencia de promedios y el intervalo de confianza
+print(diferencia_promedios)
+print(intervalo_confianza)
+
+```
+<h4>Con un nivel de confianza del 95% podemos afirmar que la diferencia de promedios de la circunferencia abdominal entre hombres y mujeres esta en el siguiente intervalo [2.015, 9.072]</h4>
+
+
+<hr style="border: 1px solid black;">
+
+<h3><b><u>Punto D.</u></b>Construya un intervalo del 95% para la diferencia de promedios de las rodillas entre hombres y mujeres.</h3>
+```{r}
+
+# Creamos un subconjunto de datos con las variables de interés
+subconjunto <- datos[, c("X8", "X25")]
+
+# Filtramos los datos para obtener solo las mediciones de hombres y mujeres
+hombres <- subset(subconjunto, X25 == 1)
+mujeres <- subset(subconjunto, X25 == 0)
+
+# Calculamos la diferencia de promedios de diámetro de rodilla entre hombres y mujeres
+diferencia_promedios <- mean(hombres$X8) - mean(mujeres$X8)
+
+# Calculamos el intervalo de confianza para la diferencia de promedios
+intervalo_confianza <- t.test(hombres$X8, mujeres$X8, conf.level = 0.95)$conf.int
+
+# Imprimimos la diferencia de promedios y el intervalo de confianza
+print(diferencia_promedios)
+print(intervalo_confianza)
+
+```
+<h4>Con un nivel de confianza del 95% es correcto afirmar que lo más probable es que la difrencia de promedios de las rodillas esté entre [0.803, 1.704]</h4>
+
+<hr style="border: 1px solid black;">
+
+<h3><b><u>Punto E.</u></b>Construya intervalos de confianza del 90% para la varianza poblacional de la circunferencia del muslo para las mujeres.</h3>
+
+```{r}
+
+datos_mujeres <- subset(datos, X25 == 0)
+varianza <- var(datos_mujeres$X15)
+n <- nrow(datos_mujeres)  # Número de observaciones de mujeres
+alfa <- 0.1  # Nivel de confianza (10% de nivel de significancia)
+limite_inferior <- (n - 1) * varianza / qchisq(1 - alfa/2, df = n - 1)
+limite_superior <- (n - 1) * varianza / qchisq(alfa/2, df = n - 1)
+
+
+
+
+limite_inferior
+limite_superior
+
+
+```
+<h4>Con una confianza del 90% podemos decir que la varianza de la circunferencia del muslo para mujeres estará en el intervalo [18.54341
+, 36.25505]  </h4>
+
+<hr style="border: 1px solid black;">
+
+<h4>En síntesis, los intervalos de confianza nos sirven en gran manera, ya que nos permiten proporcionar una estimación más completa y precisa de un parámetro desconocido, al tiempo que reconocen la incertidumbre asociada con los datos de muestra limitados.</h4>
+
+<br> 
+<br> 
+<h1><b>Actividad 3 Pruebas de Hipótesis</b></h1>
+<br>
+
+
+### Elabore una prueba de hipotesis con α=0.05 para probar si la media de la variable X6 es diferente de 13 cm.
+
+>Solucion: De manera general se podra evidenciar que en el siguiente codigo propuesto  se dan unos pasos que a grandes rasgos lo que se hace e cargar los datos de la columna X6 en la variable "variable1", crear un histograma, realizar una prueba de normalidad de Lilliefors, imprimer un mensaje según el resultado y finalmente realizar una prueba t de dos colas.
+
+```{r }
+variable1 <- datos$X6 ##cargamos X6, en una cariable 
+# Crear un data frame con tu variable
+df <- data.frame(variable1)
+
+# Crear el histograma utilizando ggplot2
+ggplot(df, aes(x = variable1)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 10) +
+  labs(x = "Variable 1", y = "Frecuencia", title = "Histograma de Variable 1") +
+  theme_minimal()
+
+lillie.test(variable1)
+if (lillie.test(variable1)$p.value >= 0.05) {
+  cat("La variable sigue una distribución normal.\n")
+} else {
+  cat("La variable no sigue una distribución normal.\n")
+}
+t.test(variable1, alternative='two.sided', conf.level=0.95, mu=13)
+
+```
+>Del anterior codigo podemos ver en manera de pasos lo que se realiza :
+
+>1.La línea variable1 <- datos$X6 carga los datos de la columna "X6" de un objeto llamado "datos" en una variable llamada "variable1".
+
+>2.A continuación, se crea un data frame llamado "df" utilizando la variable "variable1" mediante la función data.frame(). Esto se hace para facilitar el análisis y la visualización de los datos.
+
+>3.Se utiliza la librería "ggplot2" para crear un histograma de los datos en "variable1". La función ggplot() se utiliza para inicializar el gráfico, geom_histogram() se utiliza para trazar el histograma, y labs() se utiliza para establecer etiquetas para los ejes x e y, así como un título para el gráfico. Además, theme_minimal() se utiliza para aplicar un estilo mínimo al gráfico.
+
+>4.A continuación, se realiza un test de normalidad utilizando la función lillie.test() en la variable "variable1". El resultado se almacena y se evalúa el valor p del test. Si el valor p es mayor o igual a 0.05, se imprime en pantalla el mensaje "La variable sigue una distribución normal". De lo contrario, se imprime "La variable no sigue una distribución normal".
+
+>5.Finalmente, se realiza un test de hipótesis utilizando la función t.test() en la variable "variable1". Se especifica que la alternativa es "two.sided" (dos colas), el nivel de confianza es del 95% y la hipótesis nula es que la media de "variable1" es igual a 13. El resultado del test se imprime en pantalla.
+
+>CONCLUSION:
+De lo anterior se puede conluir que;Los resultados indican que hay evidencia estadística significativa para afirmar que la media verdadera no es igual a 13, con un nivel de confianza del 95%. Además, la estimación de la media muestral es de aproximadamente 13.434.
+
+<br>
+
+### Elabore una prueba de hipotesis con α=0.01 para probar si la media dela variable X15 es mayor de 55 cm.
+
+>Solucion:El siguiente código calcula y muestra un histograma de la variable "variable2". Luego realiza un test de Lilliefors para verificar si la variable sigue una distribución normal. Dependiendo del resultado de ese test, se imprime un mensaje indicando si la variable sigue o no una distribución normal. 
+Finalmente, se realiza un t-test para comparar la media de variable2 con un valor de referencia de 55, con una prueba unilateral de cola derecha y un nivel de confianza del 99%. El resultado del t-test se imprime en la salida.
+
+
+```{r}
+variable2 <- datos$X15
+# Crear el histograma utilizando ggplot2
+ggplot(df, aes(x = variable2)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 10) +
+  labs(x = "Variable 2", y = "Frecuencia", title = "Histograma de Variable 2") +
+  theme_minimal()
+lillie.test(variable2)
+if (lillie.test(variable1)$p.value >= 0.05) {
+  cat("La variable sigue una distribución normal.\n")
+} else {
+  cat("La variable no sigue una distribución normal.\n")
+}
+resultado <- t.test(variable2, alternative = "greater", mu = 55, conf.level = 0.99)
+print(resultado)
+
+```
+
+
+>1.La línea variable2 <- datos$X15 asigna los valores de la columna "X15" del dataframe "datos" a la variable "variable2".
+
+>2.A continuación, se utiliza la biblioteca "ggplot2" para crear un histograma de los valores en "variable2". La función ggplot() inicializa el gráfico, geom_histogram() crea el histograma utilizando los datos de "variable2", y las opciones fill, color, labs y theme_minimal() se utilizan para personalizar la apariencia del gráfico.
+
+>3.Después del bloque de código relacionado con el histograma, se realiza el test de normalidad utilizando la función lillie.test() en la variable "variable2". La función lillie.test() es una prueba de normalidad basada en la prueba de Lilliefors.
+
+>4.El resultado del test de normalidad se evalúa utilizando un condicional if-else. Si el valor p del test de Lilliefors es mayor o igual a 0.05, se imprime el mensaje "La variable sigue una distribución normal.". De lo contrario, se imprime el mensaje "La variable no sigue una distribución normal.".
+
+>5.Por último, se realiza una prueba de hipótesis utilizando la función t.test(). Esta prueba compara la media de "variable2" con un valor de referencia ("mu") de 55, asumiendo una alternativa unidireccional ("greater") y un nivel de confianza del 99%. El resultado de la prueba se asigna a la variable "resultado" y se imprime en la consola utilizando la función print()
+
+>CONCLUSION: De lo anterior se puede conluir que,hay evidencia significativa para afirmar que la verdadera media es mayor que 55, con un alto grado de confianza.
+
+<br>
+
+### Elabore una prueba de hipotesis con α= 0.10 para probar si los promedios de la variable X7 en hombres y mujeres son iguales.
+
+>Solucion: El código realiza el cálculo del promedio de X7 para hombres y mujeres, y luego realiza pruebas de hipótesis para comparar las medias y las varianzas de los dos grupos. Finalmente, imprime los resultados de las pruebas de hipótesis.
+
+```{r}
+x7_hombres <- c(10.1, 11.5, 12, 10.4, 11.4, 12, 11, 12.2, 10.7, 11, 10.4, 10.9, 11, 11, 10.7, 11.6, 11.8, 10, 11.8, 11.3, 10.2, 11.5, 11.4, 11.6, 11.3, 11.3, 10.2, 10.6, 11, 11.8, 11.5, 11.4, 12, 10.8, 10.8, 11.8, 10.6, 11.3, 11.2, 10.4, 11.5, 11, 11, 11.7, 10.3, 12, 11.9, 11.2, 11.3, 11.2)
+x7_mujeres <- c(8.9, 10.2, 9.2, 10, 9.8, 9, 9.4, 10.2, 9.8, 10.1, 11, 9, 9.2, 9.5, 10, 9.2, 9.8, 9.9, 10.5, 9.2, 10.4, 10.4, 9.8, 9.6, 10.5, 10.5, 9.6, 9.8, 8.9, 9.5, 11, 10.4, 8.7, 10.5, 9.2, 9.6, 9.1, 10.6, 10.4, 10.6, 9.8, 9.8, 10.4, 10.2, 9.1, 10, 10.5, 11, 9.4, 10.6)
+
+
+# Calculamos el promedio de X7 para hombres
+promedio_hombres <- mean(x7_hombres)
+print(paste("Promedio de X7 para hombres:", promedio_hombres))
+
+# Calculamos el promedio de X7 para mujeres
+promedio_mujeres <- mean(x7_mujeres)
+print(paste("Promedio de X7 para mujeres:", promedio_mujeres))
+
+var.test(x7_hombres,x7_mujeres)
+
+# Prueba de hipótesis
+# Prueba de hipótesis
+
+result <- t.test(x7_hombres, x7_mujeres, alternative = "two.sided", mu = 0, paired = FALSE, var.equal = TRUE, conf.level = 0.90)
+
+# Resultados
+print(result)
+
+```
+
+>Del anterior codigo podemos ver en manera de pasos lo que se realiza :
+
+>1.Crea un vector llamado x7_hombres que contiene una serie de valores numéricos que representan las mediciones de una variable para un grupo de hombres.
+2.Crea un vector llamado x7_mujeres que contiene una serie de valores numéricos que representan las mediciones de la misma variable para un grupo de mujeres.
+3.Calcula el promedio de los valores en x7_hombres utilizando la función mean() y almacena el resultado en la variable promedio_hombres.
+4.Imprime en pantalla el promedio calculado para los hombres.
+Calcula el promedio de los valores en x7_mujeres utilizando la función mean() y almacena el resultado en la variable promedio_mujeres.
+5.Imprime en pantalla el promedio calculado para las mujeres.
+6.Realiza una prueba de hipótesis utilizando la función var.test() para comparar las varianzas de x7_hombres y x7_mujeres.
+7.Realiza una prueba de t-student independiente utilizando la función t.test() para comparar las medias de x7_hombres y x7_mujeres.
+8.El argumento alternative = "two.sided" indica que se realiza una prueba de dos colas.
+8.1 El argumento mu = 0 especifica que la hipótesis nula es que las medias de los dos grupos son iguales.
+8.2 El argumento paired = FALSE indica que los grupos no están relacionados entre sí.
+8.3El argumento var.equal = TRUE asume que las varianzas de ambos grupos son iguales.
+8.4El argumento conf.level = 0.90 establece el nivel de confianza en 0.90 (90%).
+9.Almacena los resultados de la prueba de t-student en la variable result.
+10.Imprime en pantalla los resultados obtenidos de la prueba de t-student.
+
+
+>De lo anterior se puede conluir que, hay una diferencia estadísticamente significativa entre las dos muestras (hombres y mujeres). La media de la muestra de hombres (11.172) es significativamente mayor que la media de la muestra de mujeres (9.876).
+
+<br>
+
+### Elabore una prueba de hipotesis con α=0.05 para probar si el promedio de la variable X13 es mayor en hombres que en mujeres.
+
+
+```{r}
+datos_punto_d <- data.frame(Genero=c(muestraHombre$X13, muestraMujer$X13), circunferenciaM=rep(c('Hombre', 'Mujer'), each=50))
+
+colores <- c("#FAE800", "#5AE3E6")
+
+boxplot(Genero ~ circunferenciaM, data=datos_punto_d, las=1,
+        xlab='Circunferencia abdominal', ylab='Género', col = colores)
+
+ad.test(muestraHombre$X13)
+
+ad.test(muestraMujer$X13)
+
+t.test(x=muestraHombre$X13, y=muestraMujer$X13, alternative="greater", mu=0, 
+       paired=FALSE, var.equal=FALSE, conf.level=0.95)
+```
+
+>Del anterior codigo tenemos el siguiente paso a paso:
+
+>1. Se crea un data.frame que tiene dos columnas: "Genero" y "circunferenciaM". Los valores de la columna "Genero" se obtienen combinando los datos de las variables muestraHombre$X13.
+2. Posteriormente realizamos un boxplot que nos permita visualizar las distribuciones de las variables X13 por género, Hombre y Mujer respectivamente.
+3. Aplica la prueba de Anderson-Darling utilizando la función ad.test() a los valores de muestraHombre$X13. Esta prueba de bondad de ajuste evalúa si los datos de Hombre para X13 siguen una distribución normal.
+4. Aplica la prueba de Anderson-Darling utilizando la función ad.test() a los valores de muestraMujer$X13. Esta prueba de bondad de ajuste evalúa si los datos en de Mujer para X13 siguen una distribución normal.
+5. Realizamos una prueba t utilizando la función t.test() para comparar las medias de la muestraX13Hombre y la muestraX13Mujer. El argumento alternative="greater" indica que la prueba es unilatera y se está probando sí la medida de la muestra X13 de Hombre es mayor que la medida de la muestra X13 de Mujer El argumento mu=0 especifica que la hipótesis nula es que no hay diferencia en las medias. Los argumentos paired=FALSE y var.equal=FALSE indican que las muestras no están emparejadas y que las varianzas de las muestras no son iguales. El argumento conf.level=0.95 establece el nivel de confianza al 95% para el intervalo de confianza del resultado de la prueba t.
+
+>De lo anterior se puede conluir que, hay una diferencia entre las dos muestras (Hombres y Mujeres). Siendo que la media de la muestra de hombres (88.520) es significativamente mayor que la media de la muestra de mujeres (82.976).
+
+<br>
+
+### ¿Es la varianza de la variable X13 en las mujeres mayor que 80?, pruebe con α=0.01
+
+>Solucion: En el siguiente código se puede evidenciar que la varianza de la variable X13(Circunferencia abdominal en cm) de las mujeres es menor o igual a 80.
+
+```{r}
+n <- 50  #Cantidad de Muestra de Mujeres
+df <- n-1  #Grados de Libertad
+va <- var(muestraMujer$X13)  #Cálculo de la varianza muestral de X13 en Mujeres
+
+hi <- 80  #Valor hipotetico hipotético dado el enunciado
+chi <- (df*va)/hi  #Estadístico de Prueba chi cuadrado
+
+valor_p <- 1-pchisq(chi,df=n-1)  ##Obtengo el valor de la prueba a cola derecha
+print(valor_p)  
+
+if(valor_p < 0.01){
+  print("Dado que p valor es menor que alpha se rechaza la hipotesis nula y por tanto la varianza es mayor a 80")
+}else{
+  print("Dado que p valor es mayor que alpha NO se rechaza la hipotesis nula y por tanto la varianza es menor o   igual a 80")}
+```
+
+>Tenemos cómo Hipotesis Nula: La varianza es menor o igual a 80
+
+>Hipotesis Alternativa: La varianza es mayor que 80
+
+>1. Hallamos la varianza como medida de tendencia central.
+2. Hallamos el estadístico de prueba usando la distribución "Chi cuadrado" y el valor hipotético=80 dado el enunciado.
+3. Obtenemos el valor p usando la función de densidad Chi cuadrado teniendo en cuenta que es una prueba a cola derecha.
+4. A través de un condicional comparamos el alpha con el valor p y obtenemos la respuesta.
+
+<br>
+
+### ¿Es la varianza de la variable X8 en los hombres igual que 1.5?, pruebe con α=0.01
+
+>Solucion: En el siguiente código se puede evidenciar que la varianza de la variable X8(Diámetro de Rodillas en cm) de los mujeres es menor o igual a 80 dada nuestra semilla obtenida de forma aleatoria.
+
+```{r}
+n <- 50#Tamaño de la muestra
+df <- n-1#Grados de libertad
+va <- var(muestraHombre$X8)#Calculo de varianza muestral de X8 en Hombres
+va
+hi <- 1.5#Valor hipotetico hipotético dado el enunciado
+
+chi <- (df*va)/hi
+chi#estadistico de prueba chi cuadrado
+
+valor_p_2 <- 2*(1-pchisq(chi,df=n-1))#Obtengo el valor de la prueba a dos colas
+valor_p_2
+
+if(valor_p_2 < 0.01){
+  print("Dado que p valor es menor que alpha se rechaza la hipotesis nula y por tanto la varianza es diferente a 1.5")
+}else{
+  print("Dado que p valor es mayor que alpha NO se rechaza la hipotesis nula y por tanto la varianza sí es igual a 1.5")}
+```
+
+>Tenemos cómo Hipotesis Nula: La varianza es igual a 1.5
+
+>Hipotesis Alternativa: La varianza es diferente a 1.5
+
+>1. Hallamos la varianza como medida de tendencia central.
+2. Hallamos el estadístico de prueba usando la distribución "Chi cuadrado" y el valor hipotético=1.5 dado el enunciado.
+3. Obtenemos el valor p usando la función de densidad Chi cuadrado teniendo en cuenta que es una prueba a dos colas.
+4. A través de un condicional comparamos el alpha con el valor p y obtenemos la respuesta dada nuestra semilla obtenida de forma aleatoria.
+
+<br> 
+<br> 
+<h1><b>Actividad 4 Regresión Líneal</b></h1>
+
+
+>En el código proporcionado, se realiza un análisis de regresión lineal para investigar las correlaciones entre las variables antropométricas de un grupo de individuos, divididos por género (hombres y mujeres). A continuación, se proporciona una descripción paso a paso de lo que se hizo:
+
+<br>
+
+>1. Se cargan los datos utilizando la función read_excel() del paquete readxl. Los datos se almacenan en el objeto "datos" y se elimina la columna 8, que contiene la variable de género.
+
+```{r}
+datos <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 3/file6a9c21df3f11.xlsx")
+datos <- datos[,-8]
+```
+<br>
+
+>2. Se separan los datos en dos subconjuntos: "male" para los datos de los hombres (filas 1 a 50) y "female" para los datos de las mujeres (filas 51 a 100).
+
+```{r}
+male <- datos[1:50, ]
+female <- datos[51:100, ]
+```
+<br>
+
+>3. Se utiliza la función pairs() para mostrar una matriz de gráficos de dispersión que representa las correlaciones entre todas las variables en el conjunto de datos completo ("datos").
+
+```{r}
+pairs(datos)
+```
+<br>
+
+>4. Se calcula la matriz de correlación utilizando la función cor() y se almacena en el objeto "matriz_correlacion". Luego, se utiliza la función cor() nuevamente para calcular las correlaciones entre todas las variables en el conjunto de datos completo.
+
+```{r}
+####La tabla1 presenta las correlaciones entre las variables sin importar el sexo.
+cor(datos) #tabla1. Correlaciones generales
+```
+<br>
+
+>5. Se utiliza la función which() para identificar las ubicaciones de las correlaciones que superan el umbral de 0.8 y no son iguales a 1. Estas correlaciones se almacenan en el objeto "correlaciones_altas".
+
+```{r}
+umbral <- 0.8
+correlaciones_altas <- which(abs(cor(datos)) > umbral & cor(datos) != 1, arr.ind = TRUE)
+correlaciones_altas
+```
+<br>
+
+>6. Se realiza un análisis de regresión lineal utilizando la función lm() para las variables X7 y X6 en el conjunto de datos completo ("datos"). Luego, se utiliza la función ggplot() del paquete ggplot2 para graficar los datos con una línea de regresión.
+
+```{r, warning = FALSE}
+####Con la informacion anterior podemos saber que variables graficar
+library(ggplot2)
+reg.lin <- lm(X7 ~ X6, data = datos)
+  ggplot(datos, aes(x = X7, y = X6)) +
+  geom_point(color = "brown2", size = 3) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = FALSE, color = 'dodgerblue4', size=2) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "lightcyan"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+
+  ) +
+  labs(x = "Diametro de Muñeca(cm)", y = "Diametro del codo(cm)", title = "Grafica 1. Muñeca vs Codo")
+```
+<br>
+<br>
+<hr style="border: 1px solid black;">
+<br>
+<br>
+
+>7. Se repiten los pasos 6 y 7 para el análisis de regresión lineal entre X23 y X6 en el conjunto de datos completo ("datos"), así como en los subconjuntos "male" y "female". 
+  
+```{r, warning = FALSE}  
+reg.lin <- lm(X23 ~ X6, data = datos)
+
+ggplot(datos, aes(x=X23, y=X6)) +
+  geom_point(color = "forestgreen", size = 3) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = FALSE, color = 'tomato4', size=2) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "lightcyan"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+
+  ) +
+  labs(x = "Peso(kg)", y = "Diametro del codo(cm)", title = "Grafica 2. Peso vs Codo")
+
+```
+<br>
+<br>
+<hr style="border: 1px solid black;">
+<br>
+<br>
+
+>8. Se repiten los pasos 3 a 7 para los subconjuntos "male" y "female" por separado, generando gráficas de dispersión y realizando análisis de regresión lineal entre X23 y X15.
+
+```{r, warning = FALSE}
+
+pairs(male)
+
+####La tabla2 presenta las correlaciones entre las variables de los hombres
+cor(male) #tabla2. Correlaciones hombres
+
+####Intentamos hallar las variables con mayor correlacion en los hombres (recordar que se tomo un umbral de 0.8)
+correlaciones_altas <- which(abs(cor(male)) > umbral & cor(male) != 1, arr.ind = TRUE)
+correlaciones_altas
+
+####La circunferencia del muslo y el peso es lo que mas tiene correlacion
+reg.lin <- lm(X23 ~ X15, data = male)
+
+ggplot(male, aes(x=X23, y=X15)) +
+ geom_point(color = "limegreen", size = 3) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = FALSE, color = 'deeppink2', size=2) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "lightcyan"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+
+  ) +
+  labs(x = "Peso(kg)", y = "Circunferencia del muslo(cm)", title = "Grafica 3. Peso vs Muslo")
+
+pairs(female)
+
+####Veamos los coeficientes de relacion de las diferentes variables en las mujeres
+cor(female) #tabla3. Correlaciones mujeres
+
+####Finalizando, estas son las variables por encima del umbral de correlacion de las mujeres
+correlaciones_altas <- which(abs(cor(male)) > umbral & cor(male) != 1, arr.ind = TRUE)
+correlaciones_altas
+
+####Sorprendentemente encontramos las mismas dos variables con mayor correlacion que el de los hombres
+reg.lin <- lm(X23 ~ X15, data = female)
+
+ggplot(female, aes(x=X23, y=X15)) +
+
+ geom_point(color = "deeppink1", size = 3) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = FALSE, color = 'tan1', size=2) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "lightcyan"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+
+  ) +
+  labs(x = "Peso(kg)", y = "Circunferencia del muslo(cm)", title = "Grafica 4. Peso vs muslo")
+```
+<br>
+<br>
+<hr style="border: 1px solid black;">
+<br>
+<br>
+
+>Conclusión: 
+
+>Analizando el conjunto de datos separado por sexos se encontró una correlación alta entre la circunferencia del muslo (X15) y el peso (X23). Tanto en hombres como en mujeres, se observa una tendencia positiva en la relación entre estas dos variables, lo que indica que a medida que aumenta el peso, también tiende a aumentar la circunferencia del muslo.
+
+>Las gráficas de dispersión y las líneas de regresión lineal ayudan a visualizar la relación entre las variables y proporcionan una estimación de la tendencia en los datos.
+
+<br>
+<br> 
+<br> 
+<h1><b>Bibliografía</b></h1>
+<br>
+
+>Hernández, F., & Usuga, O. (2023, abril 27). Manual de R. Github.io. https://fhernanb.github.io/Manual-de-R/
+
+>Error in plot.new() : figure margins too large, Scatter plot. (s/f). Stack Overflow. Recuperado el 28 de junio de 2023, de https://stackoverflow.com/questions/23050928/error-in-plot-new-figure-margins-too-large-scatter-plot
+
+>How to solve this error: Error in as.data.frame.default(x[[i]], optional = TRUE): cannot coerce class ‘ “function”’ to a data.frame. (s/f). Stack Overflow. Recuperado el 28 de junio de 2023, de https://stackoverflow.com/questions/68314575/how-to-solve-this-error-error-in-as-data-frame-defaultxi-optional-true
+
+>Converting call to equation in r markdown. (s/f). Stack Overflow. Recuperado el 28 de junio de 2023, de https://stackoverflow.com/questions/56568767/converting-call-to-equation-in-r-markdown

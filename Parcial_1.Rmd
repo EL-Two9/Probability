@@ -1,0 +1,864 @@
+---
+title: "Parcial 1 Probabilidad (Diamantes)"
+author: "Eduard Patiño, Kevin González, Juan Cristancho, Anderson Mateus, Javier Latorre"
+date: "2023-03-18"
+output: html_document
+---
+
+```{r,echo=FALSE}
+set.seed(20261)
+
+library(plotly)
+library(fdth)
+library(tidyverse)
+library(dplyr)
+library(descr)
+library(plot3D)
+library(plotly)
+library(ggplot2)
+library(viridis)
+library(plotrix)
+library(modeest)
+library(readr)
+library(remotes)
+library(stats)
+library(readxl)
+
+# Leer el archivo Excel
+diamonds <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 1/Semilla.xlsx")
+diamantes <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 1/Semilla.xlsx")
+datos <- data.frame(diamantes)
+muestra1 <- datos[sample(nrow(datos),size=1000),0:10]
+muestra_diamante <- datos[sample(nrow(datos),size=1000),0:10]
+Semilla <- read_excel("C:/Users/ELtwo/Desktop/Probabilidad/Parcial 1/Semilla.xlsx")
+
+```
+
+
+### Introducción
+
+>En este ejercicio práctico se ponen en práctica los conceptos de Tablas de Frecuencias y gráficos para variables cuantitativas y cualitativas utilizando R. Para realizar la práctica, utilizamos una base de datos llamada "diamonds", que viene incluida en R y contiene información sobre más de 54,000 diamantes, incluyendo sus precios y características.
+
+>Tomamos una muestra de 1000 datos de esta base de datos con el objetivo de identificar patrones y tendencias ocultas al analizar varias variables y al crear diferentes tipos de gráficos. Estas variables incluyen el precio, el tamaño en quilates, el tipo de corte, el color, la claridad, la profundidad, la tabla (ancho de la parte superior del diamante), la longitud, el ancho y la profundidad del diamante.
+
+
+### Variables cualitativas
+
+```{r echo=FALSE, message=TRUE}
+#Fablas de Frecuencia Absoluta
+
+
+frecuencia_corte <- table(diamonds$corte)
+df_frecuencia_corte <- as.data.frame(frecuencia_corte)
+names(df_frecuencia_corte) <- c("Corte", "Frecuencia")
+
+frecuencia_color <- table(diamonds$color)
+df_frecuencia_color <- as.data.frame(frecuencia_color)
+names(df_frecuencia_color) <- c("Color", "Frecuencia")
+
+frecuencia_claridad <- table(diamonds$claridad)
+df_frecuencia_claridad <- as.data.frame(frecuencia_claridad)
+names(df_frecuencia_claridad) <- c("Claridad", "Frecuencia")
+
+
+
+```
+
+
+|     | Claridad| Frecuencia |
+|-----|----------|------------|
+|1    |I1        |     16     |
+|2    |IF        |     33     |
+|3    |SI1       |    232     |
+|4    |SI2       |    182     |
+|5    |VS1       |    157     |
+|6    |VS2       |    211     |
+|7    |VVS1      |     72     |
+|8    |VVS2      |     97     |
+
+
+|     |  Color   | Frecuencia |
+|-----|----------|------------|
+|1    |D         |    131     |
+|2    |E         |    195     |
+|3    |F         |    160     |
+|4    |G         |    223     |
+|5    |H         |    142     |
+|6    |I         |    102     |
+|7    |J         |     47     |
+
+
+|     |Corte     |Frecuencia  |
+|-----|----------|------------|
+|1    |Bueno     |    100     |
+|2    |Ideal     |    391     |
+|3    |Muy Bueno |    226     |
+|4    |Premium   |    248     |k|5    |Regular   |     35     |
+
+
+
+### Diagramas de barras
+
+
+```{r echo=FALSE, message=FALSE}
+ggplot(diamantes, aes(x = color)) +
+  geom_bar(fill = '#2D7DB4') +
+  labs(x = "Color", y = "Frecuencia", title = "Frecuencia del Color de los Diamantes")
+
+colores <- colorRampPalette(c("purple", "yellow"))(15)
+ggplot(diamantes, aes(x = corte)) +
+  geom_bar(fill = '#C193CC') +
+  labs(x = "Corte", y = "Frecuencia", title = "Frecuencia del Corte de los Diamantes")
+
+ggplot(diamantes, aes(x = claridad)) +
+  geom_bar(fill = '#F8DF23') +
+  labs(x = "Claridad", y = "Frecuencia", title = "Frecuencia de la Claridad de los Diamantes")
+
+```
+
+### Diagramas de Torta
+
+```{r echo=FALSE}
+frecuencia_corte <- table(diamonds$corte)
+frecuencia_color <- table(diamonds$color)
+frecuencia_claridad <- table(diamonds$claridad)
+
+df_frecuencia_corte <- as.data.frame(frecuencia_corte)
+df_frecuencia_color <- as.data.frame(frecuencia_color)
+df_frecuencia_claridad <- as.data.frame(frecuencia_claridad)
+
+names(df_frecuencia_corte) <- c("Corte", "Frecuencia")
+names(df_frecuencia_color) <- c("Color", "Frecuencia")
+names(df_frecuencia_claridad) <- c("Claridad", "Frecuencia")
+
+df_frecuencia_corte$porcentaje <- round(df_frecuencia_corte$Frecuencia / sum(df_frecuencia_corte$Frecuencia) * 100, 2)
+
+df_frecuencia_color$porcentaje <- round(df_frecuencia_color$Frecuencia / sum(df_frecuencia_color$Frecuencia) * 100, 2)
+
+df_frecuencia_claridad$porcentaje <- round(df_frecuencia_claridad$Frecuencia / sum(df_frecuencia_claridad$Frecuencia) * 100, 2)
+
+aux1 <- paste(df_frecuencia_corte$Corte, df_frecuencia_corte$porcentaje, "%", sep = " ")
+aux2 <- paste(df_frecuencia_color$Color, df_frecuencia_color$porcentaje, "%", sep = " ")
+aux3 <- paste(df_frecuencia_claridad$Claridad, df_frecuencia_claridad$porcentaje, "%", sep = " ")
+
+colores_locos <- sample(colors(), 5)
+colores_locos2 <- sample(colors(), 6)
+colores <- c("#f9bc86", "#a0c8d2", "#f2c2b7", "#7b9ea8", "green")
+
+pie(df_frecuencia_corte$Frecuencia, labels = aux1, main = "Gráfica de Corte 2D", col = colores_locos2)
+pie3D(df_frecuencia_corte$Frecuencia, labels = aux1, explode = 0.13, main = "Gráfica de Corte 3D", col = colores_locos)
+
+pie(df_frecuencia_color$Frecuencia, labels = aux2, main = "Gráfica de Color 2D", col = colores_locos2)
+pie3D(df_frecuencia_color$Frecuencia, labels = aux2, explode = 0.13, main = "Gráfica de Color 3D", col = colores_locos)
+
+pie(df_frecuencia_claridad$Frecuencia, labels = aux3, main = "Gráfica de Claridad 2D", col = colores_locos2)
+pie3D(df_frecuencia_claridad$Frecuencia, labels = aux3, explode = 0.13, main = "Gráfica de Claridad 3D", col = colores_locos)
+
+```
+
+{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+<h2><b>Introducción</b></h2>
+>En este ejercicio práctico se ponen en práctica los conceptos de Tablas de Frecuencias y gráficos para variables cuantitativas y cualitativas utilizando R. Para realizar la práctica, utilizamos una base de datos llamada "diamonds", que viene incluida en R y contiene información sobre más de 54,000 diamantes, incluyendo sus precios y características.
+
+>Tomamos una muestra de 1000 datos de esta base de datos con el objetivo de identificar patrones y tendencias ocultas al analizar varias variables y al crear diferentes tipos de gráficos. Estas variables incluyen el precio, el tamaño en quilates, el tipo de corte, el color, la claridad, la profundidad, la tabla (ancho de la parte superior del diamante), la longitud, el ancho y la profundidad del diamante.
+
+
+### Tabla de frecuencias - variables cuantitativas
+
+
+<b><h4>Precio</h4></b>
+
+```{r, echo=FALSE}
+# Creación de vector con la variable
+precio <- (Semilla$precio)
+
+
+# Tabla de frecuencias
+freq_table <- fdth::fdt(precio)
+freq_table
+```
+
+
+<b><h4>Quilates</h4></b>
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+quilate <- (Semilla$quilate)
+
+
+# Tabla de frecuencias
+freq_table1 <- fdth::fdt(quilate)
+
+freq_table1
+```
+
+<b><h4>Profundidad</h4></b>
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+profundidad <- (Semilla$profundidad)
+
+
+# Tabla de frecuencias
+freq_table2 <- fdth::fdt(profundidad)
+
+freq_table2
+```
+
+<b><h4>Tabla</h4></b>
+
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+tabla <- (Semilla$tabla)
+
+
+# Tabla de frecuencias
+freq_table3 <- fdth::fdt(tabla)
+
+freq_table3
+```
+
+<b><h4>X</h4></b>
+
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+x <- (Semilla$x)
+
+
+# Tabla de frecuencias
+freq_table3 <- fdth::fdt(x)
+
+freq_table3
+```
+
+<b><h4>Y</h4></b>
+
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+y <- (Semilla$y)
+
+
+# Tabla de frecuencias
+freq_table3 <- fdth::fdt(y)
+
+freq_table3
+```
+
+<b><h4>Z</h4></b>
+
+```{r, echo=FALSE}
+
+# Creación de vector con la variable
+z <- (Semilla$z)
+
+
+# Tabla de frecuencias
+freq_table3 <- fdth::fdt(z)
+
+freq_table3
+```
+
+### Histograma y polígono de frecuencia de tabla
+
+```{r, echo=FALSE}
+#TABLA
+
+tabla <- fdth::fdt(Semilla$tabla)
+coloreshisto <- colorRampPalette(c("blue", "black"))(11)
+plot(tabla,type= "fh",main = "Histograma de tabla", xlab="Tabla" ,ylab = "Frecuencia", col = coloreshisto)
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+
+plot(tabla,type= "fh",main = "Histograma de tabla", xlab="Tabla" ,ylab = "Frecuencia", col = coloreshisto)
+```
+
+```{r, echo=FALSE}
+
+tabla <- fdth::fdt(Semilla$tabla)
+colorespoli <- colorRampPalette(c("purple", "pink"))(10) 
+plot(tabla,type= "fp",main = "Polígono de frecuencia para tabla", xlab="Tabla" ,ylab = "Frecuencia", col = colorespoli, lwd=2.5, lty = 2)
+axis(2, lwd=2.5, lty=2)
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+plot(tabla, type="fp", xlab="Tabla" ,ylab = "Frecuencia",col = colorespoli)
+```
+
+```{r, echo=FALSE}
+#PROFUNDIDAD
+
+profundidad <- fdth::fdt(Semilla$profundidad)
+coloreshisto2 <- colorRampPalette(c("red", "black"))(11)
+plot(profundidad,type= "fh",main = "Histograma de profundidad", xlab="Profundidad" ,ylab = "Frecuencia", col = coloreshisto2)
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+
+plot(profundidad,type= "fh",main = "Histograma de profundidad", xlab="Profundidad" ,ylab = "Frecuencia", col = coloreshisto)
+```
+
+```{r, echo=FALSE}
+
+profundidad <- fdth::fdt(Semilla$profundidad)
+colorespoli <- colorRampPalette(c("orange", "black"))(10) 
+plot(profundidad,type= "fp",main = "Polígono de frecuencia para profundidad", xlab="Profundidad" ,ylab = "Frecuencia", col = colorespoli, lwd=2.5, lty = 2)
+axis(2, lwd=2.5, lty=2)
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+plot(profundidad, type="fp", xlab="Profundidad" ,ylab = "Frecuencia",col = colorespoli)
+```
+
+```{r, echo=FALSE}
+#QUILATE
+
+quilate <- fdth::fdt(Semilla$quilate)
+coloreshisto2 <- colorRampPalette(c("green", "blue"))(11)
+plot(quilate,type= "fh",main = "Histograma de quilate", xlab="Quilate" ,ylab = "Frecuencia", col = coloreshisto2)
+```
+
+
+
+```{r, echo=TRUE, eval=FALSE}
+
+plot(quilate,type= "fh",main = "Histograma de quilate", xlab="Quilate" ,ylab = "Frecuencia", col = coloreshisto)
+```
+
+```{r, echo=FALSE}
+
+profundidad <- fdth::fdt(Semilla$profundidad)
+colorespoli <- colorRampPalette(c("green", "blue"))(10) 
+plot(quilate,type= "fp",main = "Polígono de frecuencia para quilate", xlab="Quilate" ,ylab = "Frecuencia", col = colorespoli, lwd=2.5, lty = 2)
+axis(2, lwd=2.5, lty=2)
+```
+```{r, echo=TRUE, eval=FALSE}
+plot(quilate, type="fp", xlab="Quilate" ,ylab = "Frecuencia",col = colorespoli)
+```
+
+`````{r, echo=FALSE}
+
+precioint <- fdth::fdt(diamantes$precio)
+
+colores <- colorRampPalette(c("red", "yellow"))(15)
+
+plot(precioint,type= "fh",main = "Precio", xlab="Intervalos" ,ylab = "Frecuencia", col = colores)
+
+plot(precioint, type="fp", xlab="Intervalos" ,ylab = "Frecuencia",col = colores, lwd = 3,)
+axis(2, lwd=3)
+```
+
+```{r, echo=FALSE}
+###############################################################################################
+
+xint <- fdth::fdt(diamantes$x)
+
+colores <- colorRampPalette(c("brown", "blue"))(15)
+
+plot(xint,type= "fh",main = "Histograma X", xlab="Intervalos" ,ylab = "Frecuencia", col = colores)
+
+
+
+plot(xint, type="fp", xlab="Intervalos" ,ylab = "Frecuencia",col = colores, lwd = 3,)
+axis(2, lwd=3) 
+
+##############################################################################################3
+yint <- fdth::fdt(diamantes$y)
+
+colores <- colorRampPalette(c("purple", "yellow"))(15)
+
+plot(yint,type= "fh",main = "Histograma de Y", xlab="Intervalos" ,ylab = "Frecuencia", col = colores)
+
+plot(yint, type="fp", xlab="Intervalos" ,ylab = "Frecuencia",col = colores, lwd = 3,)
+axis(2, lwd=3) 
+
+################################################################################################
+
+zint <- fdth::fdt(diamantes$z)
+
+colores <- colorRampPalette(c("pink", "lightblue"))(15)
+
+plot(zint,type= "fh",main = "Histograma de Z", xlab="Intervalos" ,ylab = "Frecuencia", col = colores)
+
+```
+
+```{r, echo=FALSE}
+
+
+plot(zint, type="fp", xlab="Intervalos" ,ylab = "Frecuencia",col = colores, lwd = 3,)
+axis(2, lwd=3) 
+
+
+```
+
+
+### Medidas de Tendencia Central
+
+```{r, echo=FALSE}
+
+preciotdc <- diamantes$precio
+
+mediapre <- mean(preciotdc)
+
+medianapre <- median(preciotdc)
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+modapre <- Mode(preciotdc)
+
+mediapre
+
+medianapre
+
+modapre
+
+tdcprecio <- c(mediapre, medianapre, modapre)
+
+etiquetas <- c( "Media", "Mediana", "Moda")
+
+graficopre <- data.frame(tdcprecio, etiquetas)
+
+colores_locos <- sample(colors(), 3)
+
+
+alturas <- graficopre$tdcprecio
+
+barras <- barplot(graficopre$tdcprecio, 
+              names.arg = graficopre$etiquetas, 
+              main = "Medidas de tendencia central",
+              xlab = "Medidas",
+              ylab = "Valores", 
+              col = colores_locos)
+
+text(barras, alturas - 500, labels = alturas, pos = 3)
+
+```
+
+
+```{r, echo=FALSE}
+
+preciovec <- diamantes$precio
+
+precio_ordenado <- sort(preciovec, decreasing = FALSE)
+
+percenprec <- c(0.25, 0.50, 0.75)
+
+percentiles <- data.frame(percentil = percenprec, valor = quantile(precio_ordenado, percenprec))
+
+plot(percentiles, type="o", ylim=c(0, max(preciovec)), xlab="Percentiles", ylab="Precio", lwd=3, col="purple")
+lines(c(0,4), c(median(preciovec), median(preciovec)), lty=3, lwd=3, col="black")
+legend("topright", c("Percentiles", "Mediana"), lty=c(1, 2), lwd=c(2,2), col=c("black", "purple"))
+
+colores_locos <- c("lightgreen","lightblue", "lightpink")
+
+cuartiles <- quantile(preciovec, probs = c(0.25, 0.5, 0.75))
+
+nombres <- c("25%", "50%", "75%")
+
+
+referencia <- barplot(cuartiles, names.arg = nombres, main = "Cuartiles de los datos",
+              ylab = "Valor", col = colores_locos)
+
+text(referencia, cuartiles, labels = round(cuartiles, 2), pos = 1)
+```
+
+
+
+### Tendencia Central Quilates
+
+```{r, echo=FALSE}
+mean_quilates <- mean(diamonds$quilate)
+
+median_quilates <- median(diamonds$quilate)
+
+moda_quilates <- names(sort(table(diamonds$quilate), decreasing = TRUE))[1]
+
+cat("Tendencia central de quilates en el conjunto de datos:\n")
+cat(paste0("Media: ", mean_quilates, "\n"))
+cat(paste0("Mediana: ", median_quilates, "\n"))
+cat(paste0("Moda: ", moda_quilates, "\n"))
+```
+
+### Posicion Quilates
+
+```{r, echo=FALSE, message=FALSE}
+ggplot(diamonds, aes(x = quilate)) +
+  geom_density(fill = "purple", alpha = 0.5) +
+  stat_density(geom = "line", aes(y = 0.1)) +
+  labs(title = "Distribucion de quilates en el conjunto de datos:",
+       x = "Quilates", y = "Densidad") +
+  geom_vline(aes(xintercept = median(quilate)), color = "red", size = 1.5) +
+  geom_vline(aes(xintercept = mean(quilate)), color = "green", size = 1.5) +
+  geom_vline(aes(xintercept = density(quilate)$x[density(quilate)$y == max(density(quilate)$y)]), color = "blue", linewidth = 1.5)
+```
+
+
+### Quartiles
+
+```{r, echo=FALSE}
+df_quilate <- data.frame(diamonds$quilate)
+cuartiles_quilate <- quantile(diamonds$quilate, c(0.25, 0.50, 0.75))
+
+ggplot(data = df_quilate, mapping = aes(x = diamonds$quilate)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "#69b3a2", alpha = 0.8) +
+  ylab("Frecuencia") +
+  scale_x_continuous(breaks = seq(0, 5, 0.5)) +
+  scale_y_continuous(limits = c(0, 200)) +
+  geom_vline(aes(xintercept = cuartiles_quilate[1], color = "Q1"), linetype = "dashed", size = 2) +
+  geom_vline(aes(xintercept = cuartiles_quilate[2], color = "Q2"), linetype = "dashed", size = 2) +
+  geom_vline(aes(xintercept = cuartiles_quilate[3], color = "Q3"), linetype = "dashed", size = 2) +
+  scale_color_manual(values = c("Q1" = "red", "Q2" = "blue", "Q3" = "green")) +
+  theme_minimal() +
+  labs(title = "Histograma de quilates con cuartiles",
+       x = "Quilates",
+       color = "Cuartil") +
+  theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12)) +
+  annotate("text", x = cuartiles_quilate[1], y = 200, label = "Q1", color = "red", size = 6) +
+  annotate("text", x = cuartiles_quilate[2], y = 200, label = "Q2", color = "blue", size = 6) +
+  annotate("text", x = cuartiles_quilate[3], y = 200, label = "Q3", color = "green", size = 6)
+```
+
+
+### Percentiles
+
+```{r, echo=FALSE}
+percentiles_quilate <- quantile(diamonds$quilate, probs = c(0.10, 0.30, 0.50, 0.70, 0.90))
+
+ggplot(data = df_quilate, aes(diamonds$quilate)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "#7CFC00", alpha = 0.8) +
+  ylab("Frecuencia") +
+  geom_vline(aes(xintercept = percentiles_quilate[1],
+                 color = "P10"),
+             linetype = "dashed",
+             size = 1) +
+  geom_vline(aes(xintercept = percentiles_quilate[2],
+                 color = "P30"),
+             linetype = "dashed",
+             size = 1) +
+  geom_vline(aes(xintercept = percentiles_quilate[3],
+                 color = "P50"),
+             linetype = "dashed",
+             size = 1) +
+  geom_vline(aes(xintercept = percentiles_quilate[4],
+                 color = "P70"),
+             linetype = "dashed",
+             size = 1) +
+  geom_vline(aes(xintercept = percentiles_quilate[5],
+                 color = "P90"),
+             linetype = "dashed",
+             size = 1) +
+  scale_color_manual(values = c("P10" = "red", "P30" = "brown", "P50" = "blue",
+                                "P70" = "purple", "P90" = "orange")) +
+  labs(title = "Histograma de la variable Quilate con percentiles",
+       x = "Quilate",
+       color = "Percentiles")+
+  annotate("text", x = percentiles_quilate[1], y = 200, label = "P10", color = "red", size = 4) +
+  annotate("text", x = percentiles_quilate[2], y = 200, label = "P30", color = "brown", size = 4) +
+  annotate("text", x = percentiles_quilate[3], y = 200, label = "P50", color = "blue", size = 4)+
+  annotate("text", x = percentiles_quilate[4], y = 200, label = "P70", color = "purple", size = 4) +
+  annotate("text", x = percentiles_quilate[5], y = 200, label = "P90", color = "orange", size = 4)
+```
+
+
+### Tendencia central de Profundidad
+
+```{r, echo=FALSE, message=FALSE}
+mean_profundidad <- mean(diamonds$profundidad)
+
+median_profundidad <- median(diamonds$profundidad)
+
+moda_profundidad <- names(sort(table(diamonds$profundidad), decreasing = TRUE))[1]
+
+cat("Tendencia central de profundidad en el conjunto de datos:\n")
+cat(paste0("Media: ", mean_profundidad, "\n"))
+cat(paste0("Mediana: ", median_profundidad, "\n"))
+cat(paste0("Moda: ", moda_profundidad, "\n"))
+```
+
+
+```{r echo=FALSE }
+ggplot(diamonds, aes(x = profundidad)) +
+  geom_density(fill = "purple", alpha = 0.5) +
+  stat_density(geom = "line", aes(y = 0.1)) +
+  labs(title = "Distribucion de profundidad en el conjunto de datos:",
+       x = "Profundidad", y = "Densidad") +
+  geom_vline(aes(xintercept = median(profundidad)), color = "red", size = 1.5) +
+  geom_vline(aes(xintercept = mean(profundidad)), color = "green", size = 1.5) +
+  geom_vline(aes(xintercept = density(profundidad)$x[density(profundidad)$y == max(density(profundidad)$y)]), color = "blue", size = 1.5)
+```
+
+
+### Cuartiles
+
+```{r, echo=FALSE}
+df_profundidad <- data.frame(diamonds$profundidad)
+cuartiles_profundidad <- quantile(diamonds$profundidad, c(0.25, 0.50, 0.75))
+
+ggplot(data = df_profundidad, mapping = aes(x = diamonds$profundidad)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "#69b3a2", alpha = 0.8) +
+  ylab("Frecuencia") +
+  scale_x_continuous(breaks = seq(0, 5, 0.5)) +
+  scale_y_continuous(limits = c(0, 45)) +
+  geom_vline(aes(xintercept = cuartiles_profundidad[1], color = "Q1"), linetype = "dashed", size = 2) +
+  geom_vline(aes(xintercept = cuartiles_profundidad[2], color = "Q2"), linetype = "dashed", size = 2) +
+  geom_vline(aes(xintercept = cuartiles_profundidad[3], color = "Q3"), linetype = "dashed", size = 2) +
+  scale_color_manual(values = c("Q1" = "red", "Q2" = "blue", "Q3" = "green")) +
+  theme_minimal() +
+  labs(title = "Histograma de profundidad con cuartiles",
+       x = "Profundidad",
+       color = "Cuartil") +
+  theme(plot.title = element_text(hjust = 0.5, size = 18, face = "bold"),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12)) +
+  annotate("text", x = cuartiles_profundidad[1], y = 200, label = "Q1", color = "red", size = 6) +
+  annotate("text", x = cuartiles_profundidad[2], y = 200, label = "Q2", color = "blue", size = 6) +
+  annotate("text", x = cuartiles_profundidad[3], y = 200, label = "Q3", color = "green", size = 6)
+```
+
+
+### Percentiles
+
+```{r, echo=FALSE}
+percentiles_profundidad <- quantile(diamonds$profundidad, probs = c(0.10, 0.30, 0.50, 0.70, 0.90))
+
+ggplot(data = df_profundidad, aes(diamonds$profundidad)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "#7CFC00", alpha = 0.8) +
+  ylab("Frecuencia") +
+  geom_vline(aes(xintercept = percentiles_profundidad[1],
+                 color = "P10"),
+             linetype = "dashed",
+             size = 2) +
+  geom_vline(aes(xintercept = percentiles_profundidad[2],
+                 color = "P30"),
+             linetype = "dashed",
+             size = 2) +
+  geom_vline(aes(xintercept = percentiles_profundidad[3],
+                 color = "P50"),
+             linetype = "dashed",
+             size = 2) +
+  geom_vline(aes(xintercept = percentiles_profundidad[4],
+                 color = "P70"),
+             linetype = "dashed",
+             size = 2) +
+  geom_vline(aes(xintercept = percentiles_profundidad[5],
+                 color = "P90"),
+             linetype = "dashed",
+             size = 2) +
+  scale_color_manual(values = c("P10" = "red", "P30" = "brown", "P50" = "blue",
+                                "P70" = "purple", "P90" = "orange")) +
+  labs(title = "Histograma de la variable profundidad con percentiles",
+       x = "Quilate",
+       color = "Percentiles")+
+  annotate("text", x = percentiles_profundidad[1], y = 45, label = "P10", color = "red", size = 4) +
+  annotate("text", x = percentiles_profundidad[2], y = 45, label = "P30", color = "brown", size = 4) +
+  annotate("text", x = percentiles_profundidad[3], y = 45, label = "P50", color = "blue", size = 4)+
+  annotate("text", x = percentiles_profundidad[4], y = 45, label = "P70", color = "purple", size = 4) +
+  annotate("text", x = percentiles_profundidad[5], y = 45, label = "P90", color = "orange", size = 4)
+```
+
+
+### Precio vs. Quilates de diamantes por color
+
+```{r, echo=FALSE}
+
+ggplot(muestra1, aes(x = quilate, y = precio, color = color)) +
+  geom_point() +
+  scale_color_brewer(type = "seq", palette = "Blues") +
+  labs(title = "Precio vs. Quilates de diamantes por color",
+       x = "Quilates",
+       y = "Precio")
+```
+
+
+### Precio vs quilate de a cuerdo al corte
+
+```{r, echo=FALSE}
+ggplot(muestra1, aes(x = corte, y = precio, fill = quilate)) +
+  geom_boxplot() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  labs(title = "Precio de diamantes por corte y quilates",
+       x = "Corte",
+       y = "Precio")
+```
+
+
+### Densidad para x
+
+```{r, echo=FALSE}
+ media <- mean(muestra1$x)
+moda <- mfv(muestra1$x)
+mediana <- median(muestra1$x)
+
+##muestras de x 
+ggplot(muestra1, aes(x=x)) +
+  geom_density(fill = "green", alpha = 0.7) +
+  geom_vline(xintercept = mediana, color = "yellow", linetype = "dashed") +
+  geom_vline(xintercept = media, color = "blue", linetype = "dashed") +
+  geom_vline(xintercept = moda, color = "brown", linetype = "dashed") +
+  labs(title="Densidad para la variable x",
+       subtitle = paste("Mediana:",mediana,"Media:",media,"Moda:",moda)) +
+  theme_classic()
+```
+
+
+### Profundidad de cuartiles
+
+```{r, echo=FALSE}
+depth_values <- muestra1$profundidad
+prof_cuartiles <- quantile(depth_values, probs = c(0.25, 0.5, 0.75))
+
+# Create data frame for plotting
+cuartiles_df <- data.frame(cuartil = c("1er cuartil", "2do cuartil", "3er cuartil"),
+                           profundidad = prof_cuartiles)
+
+ggplot(cuartiles_df, aes(x = cuartil, y = profundidad)) +
+  geom_point(size = 10, shape = 24, color = "blue") +
+  geom_line(size = 2, color = "#8c510a") +
+  scale_x_discrete(labels = c("1er cuartil", "2do cuartil", "3er cuartil")) +
+  labs(x = "Cuartil", y = "Profundidad", 
+       title = "Cuartiles de la columna profundidad") +
+  geom_text(aes(label = sprintf("%.2f", prof_cuartiles), y = prof_cuartiles + 0.5),
+            size = 12, color = "#8c510a") +
+  theme_light() +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(size = 14, hjust = 0.5))
+```
+
+
+### Percentil profundidad
+
+```{r, echo=FALSE}
+
+percentiles_profundidad <- quantile(muestra1$profundidad, probs = seq(0, 1, by = 0.1))
+
+percentiles_df <- data.frame(percentiles = names(percentiles_profundidad), profundidad = percentiles_profundidad)
+
+# Crear la visualización en 3D
+plot_ly(percentiles_df, x = ~percentiles, y = ~profundidad, z = ~profundidad, type = "scatter3d",
+        mode = "lines+markers",
+        line = list(color = "#8c510a", width = 2),
+        marker = list(color = "#006d2c", size = 4)) %>%
+  add_trace(x = ~percentiles, y = ~rep(median(percentiles_df$profundidad), length(percentiles)), z = ~median(percentiles_df$profundidad),
+            type = "scatter3d", mode = "lines",
+            line = list(color = "#8c510a", dash = "dash", width = 2)) %>%
+  layout(scene = list(xaxis = list(title = "Percentil"),
+                      yaxis = list(title = "Profundidad"),
+                      zaxis = list(title = "Profundidad")),
+         margin = list(l = 0, r = 0, b = 0, t = 80),
+         title = list(text = "Percentiles de la columna profundidad en la base de datos diamonds",
+                      font = list(size = 18)),
+         font = list(size = 12))
+print(percentiles_profundidad)
+```
+
+
+### Varianza de la columna precio
+
+```{r, echo=FALSE}
+varianza <- data.frame(categoria=c("Precio","Quilate","Profundidad","Tabla","x","y","z"),
+                       varianza=c(var(muestra1[1]),var(muestra1[2]),var(muestra1[6]),var(muestra1[7]),var(muestra1[8]),var(muestra1[9]),var(muestra1[10])))
+
+ggplot(varianza, aes(x=categoria, y=varianza)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  ggtitle("Varianza de precio respecto a las otras variables")
+```
+
+
+### Varianza sin incluirr la variable precio
+
+```{r, echo=FALSE}
+
+varianza <- data.frame(categoria=c("Quilate","Profundidad","Tabla","x","y","z"),
+                       varianza=c(var(muestra1[2]),var(muestra1[6]),var(muestra1[7]),var(muestra1[8]),var(muestra1[9]),var(muestra1[10])))
+
+ggplot(varianza, aes(x = categoria, y = varianza)) +
+  geom_col(fill = "darkblue") +
+  xlab("Variable") +
+  ylab("Varianza") +
+  ggtitle("Varianza de variables del dataset diamantes")
+
+```
+
+
+### Desviación
+
+```{r, echo=FALSE}
+desviaciones <- apply(diamantes[, c("profundidad", "tabla", "quilate", "x", "y", "z")], 2, sd)
+
+barplot(desviaciones, names.arg = c("profdad", "tabla", "quilate", "x", "y", "z"), 
+        col = "#F85E5B", xlab = "Columnas", ylab = "Desviación estándar", 
+        main = "Desviación")
+
+```
+
+
+### Dispersión entre precio y quilate
+
+```{r, echo=FALSE}
+
+colores_locos <- sample(colors(), 3)
+
+plot(x = muestra_diamante$precio, y = muestra_diamante$quilate, col= colores_locos ,xlab="Precio",ylab="Quilate")
+
+```
+
+### Dispersión entre precio y profundidad
+
+```{r, echo=FALSE}
+colores_locos <- sample(colors(), 3)
+
+plot(x = muestra_diamante$precio, y = muestra_diamante$profundidad, col= colores_locos ,xlab="Precio",ylab="Profundidad")
+
+```
+
+### Diagrama de Diamantes
+
+```{r, echo=FALSE}
+
+ggplot(muestra1, aes(x = x, y = y)) +
+  geom_point(aes(size = quilate, color = precio)) +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "Longitud (mm)", y = "Anchura (mm)", title = "Diagrama de Diamantes") +
+  theme_bw()
+
+```
+
+
+
+### Diagramas de Caja
+
+>La caja representa el rango intercuartílico (IQR), que es la distancia entre el primer y tercer cuartil de los datos. La línea en el medio de la caja representa la mediana de los datos. Los brazos que se extienden desde la caja representan los valores mínimo y máximo de los datos, o un rango específico de valores, a menudo definidos como 1.5 veces el IQR.
+
+```{r, echo=FALSE}
+
+boxplot(Semilla$precio, main="Diagrama de cajas para precio de los diamantes",col= "#3F24ED" , pars = list(boxwex=0.3), ylab="Precio en dólares")
+boxplot(Semilla$quilate, main="Diagrama de cajas para quilate de los diamantes",col= "#7825F7" , pars = list(boxwex=0.3), ylab="Quilates en dólares")
+boxplot(Semilla$tabla, main="Diagrama de cajas para ancho de los diamantes",col= "#A22DE0" , pars = list(boxwex=0.3))
+boxplot(Semilla$profundidad, main="Diagrama de cajas para profundidad de los diamantes",col= "#E425F7" , pars = list(boxwex=0.3))
+
+boxplot(data.frame(x,y,z), main="Diagrama de cajas para X, Y y Z", col = c("#3AF02B","#25B4F7","#A22DE0"))
+```
+
